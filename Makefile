@@ -29,7 +29,7 @@ all: buildroot
 	touch .installed_xtools
 
 buildroot-a20-olinuxino:
-	git clone git://github.com/mireq/buildroot-a20-olinuxino
+	git clone git://github.com/RikNL/buildroot-a20-olinuxino
 
 .configured_buildroot: buildroot-a20-olinuxino .installed_xtools
 	cat buildroot-a20-olinuxino/configs/a20_olinuxino_defconfig > buildroot-a20-olinuxino/configs/a20_olinuxino_crossng_defconfig
@@ -37,21 +37,11 @@ buildroot-a20-olinuxino:
 	echo "BR2_TOOLCHAIN_EXTERNAL_PATH=\"$(shell pwd)/x-tools/arm-cortex_a7-linux-gnueabi\"" >> buildroot-a20-olinuxino/configs/a20_olinuxino_crossng_defconfig
 	touch .configured_buildroot
 
-.installed_buildroot_stage1: buildroot-a20-olinuxino .configured_buildroot
+buildroot: buildroot-a20-olinuxino .configured_buildroot
 	mkdir -p buildroot-a20-olinuxino/output/host/usr/arm-buildroot-linux-gnueabihf/sysroot/usr/lib/qt/plugins/accessible
 	make -C buildroot-a20-olinuxino a20_olinuxino_crossng_defconfig
 	make -C buildroot-a20-olinuxino
-	touch .installed_buildroot_stage1
-
-.installed_buildroot_stage2: .installed_buildroot_stage1
-	rm -f buildroot-a20-olinuxino/output/build/linux-HEAD/.stamp_{built,target_installed,images_installed}
-	cat linux-config > buildroot-a20-olinuxino/output/build/linux-HEAD/.config
-	make -C buildroot-a20-olinuxino
-	touch .installed_buildroot_stage2
-
-buildroot: .installed_buildroot_stage2 .installed_buildroot_stage2
-	make -C buildroot-a20-olinuxino
+	touch .installed_buildroot
 
 clean:
-	rm -rf ${CROSSTOOL}
-	rm -f ${CROSSTOOL}.tar.bz2
+	make -C buildroot-a20-olinuxino clean
